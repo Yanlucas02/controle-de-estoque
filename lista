@@ -1,0 +1,82 @@
+import estoque
+
+def menu_principal():
+    """Menu principal do sistema"""
+    while True:
+        print("\n=== SISTEMA DE ESTOQUE ===")
+        print("1 - Adicionar item")
+        print("2 - Listar itens")
+        print("3 - Atualizar quantidade")
+        print("4 - Remover item")
+        print("5 - Buscar item")
+        print("6 - Sair")
+
+        opcao = input("\nEscolha uma opção: ")
+
+        if opcao == "1":
+            codigo_input = input("Código do item: ")
+            if not codigo_input.strip():
+                print("Erro: O código do item não pode ser vazio.")
+                continue
+            if '.' in codigo_input or ',' in codigo_input:
+                print("Erro: O valor deve ser inteiro.")
+                continue
+            try:
+                codigo = int(codigo_input)
+                if codigo <= 0:
+                   print("Erro: O valor deve ser maior que zero.")
+                   continue
+            except ValueError:
+                print("Erro: O código do item deve ser um número inteiro válido.")
+                continue
+
+            nome = input("Nome do item: ")
+            if not nome.strip():
+                print("Erro: O nome do item não pode ser vazio.")
+                continue
+            try:
+                quantidade = int(input("Quantidade: "))
+                preco = float(input("Preço: R$ "))
+                estoque.adicionar_item(str(codigo), nome, quantidade, preco)
+            except ValueError:
+                print("Erro: Quantidade e Preço devem ser números válidos.")
+
+        elif opcao == "2":
+            estoque.listar_itens()
+
+        elif opcao == "3":
+            codigo = input("Código do item: ")
+            if not codigo.strip():
+                print("Erro: O código do item não pode ser vazio.")
+                continue
+            try:
+                nova_qtd = int(input("Nova quantidade: "))
+                estoque.atualizar_quantidade(codigo, nova_qtd)
+            except ValueError:
+                print("Erro: Nova quantidade deve ser um número válido.")
+
+        elif opcao == "4":
+            codigo = input("Código do item a remover: ")
+            if not codigo.strip():
+                print("Erro: O código do item não pode ser vazio.")
+                continue
+            estoque.remover_item(codigo)
+
+        elif opcao == "5":
+            codigo = input("Código do item: ")
+            if not codigo.strip():
+                print("Erro: O código do item não pode ser vazio.")
+                continue
+            estoque.buscar_item(codigo)
+
+        elif opcao == "6":
+            print("Saindo do sistema...")
+            break
+
+        else:
+            print("Opção inválida!")
+
+
+if __name__ == "__main__":
+    estoque.criar_banco()
+    menu_principal()
