@@ -1,0 +1,122 @@
+%%writefile estoque.py
+import sqlite3
+import os
+
+def criar_banco():
+    """Cria o banco de dados e a tabela estoque"""
+    nome_banco = 'estoque.db'
+
+    if not os.path.exists(nome_banco):
+        print("Banco não encontrado. Criando banco...")
+    else:
+        print("Banco já existe. Recriando banco...")
+        os.remove(nome_banco)
+
+    conexao = sqlite3.connect(nome_banco)
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        CREATE TABLE estoque (
+            codigo TEXT PRIMARY KEY,
+            nome_item TEXT NOT NULL,
+            quantidade INTEGER NOT NULL,
+            preco REAL NOT NULL
+        )
+    """
+    )
+
+    conexao.commit()
+    conexao.close()
+    print("Banco pronto para uso!")
+  
+def adicionar_item(codigo, nome, quantidade, preco):
+    """Adiciona um novo item ao estoque"""
+    conexao = sqlite3.connect('estoque.db')
+    cursor = conexao.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO estoque (codigo, nome_item, quantidade, preco)
+            VALUES (?, ?, ?, ?)
+        """, (codigo, nome, quantidade, preco))
+        conexao.commit()
+        print(f"Item '{nome}' adicionado com sucesso!")
+    except sqlite3.IntegrityError:
+        print(f"Erro: Já existe um item com o código {codigo} ou o nome do item é inválido.")
+
+    conexao.close()
+
+def listar_itens():
+    """Lista todos os itens do estoque"""
+    conexao = sqlite3.connect('estoque.db')
+    cursor = conexao.cursor()
+
+    cursor.execute("SELECT * FROM estoque")
+    itens = cursor.fetchall()
+
+    if not itens:
+        print("\nEstoque vazio!")
+    else:
+        print("\n=== ESTOQUE ===")
+        print(f"{'Código':<10} {'Nome':<20} {'Quantidade':<10} {'Preço':<10}")
+        print("-" * 50)
+        for item in itens:
+            print(f"{item[0]:<10} {item[1]:<20} {item[2]:<10} R$ {item[3]:<10.2f}")
+
+    conexao.close()
+    return itens
+
+def atualizar_quantidade(codigo, nova_quantidade):
+    """Atualiza a quantidade de um item"""
+    conexao = sqlite3.connect('estoque.db')
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        UPDATE estoque
+        SET quantidade = ?
+        WHERE codigo = ?
+    """, (nova_quantidade, codigo))
+
+    if cursor.rowcount > 0:
+        conexao.commit()
+        print(f"Quantidade do item {codigo} atualizada para {nova_quantidade}")
+    else:
+        print(f"Item com código {codigo} não encontrado!")
+
+    conexao.close()
+
+def remover_item(codigo):
+    """Remove um item do estoque"""
+    conexao = sqlite3.connect('estoque.db')
+    cursor = conexao.cursor()
+
+    cursor.execute("DELETE FROM estoque WHERE codigo = ?", (codigo,))
+
+    if cursor.rowcount > 0:
+        conexao.commit()
+        print(f"Item {codigo} removido com sucesso!")
+    else:
+        print(f"Item com código {codigo} não encontrado!")
+
+    conexao.close()
+
+def buscar_item(codigo):
+    """Busca um item pelo código"""
+    conexao = sqlite3.connect('estoque.db')
+    cursor = conexao.cursor()
+
+    cursor.execute("SELECT * FROM estoque WHERE codigo = ?", (codigo,))
+    item = cursor.fetchone()
+
+    if item:
+        print(f"\nItem encontrado:")
+        print(f"Código: {item[0]}")
+        print(f"Nome: {item[1]}")
+        print(f"Quantidade: {item[2]}")
+        print(f"Preço: R$ {item[3]:.2f}")
+    else:
+        print(f"Item com código {codigo} não encontrado!")
+
+    conexao.close()
+  
+    return item
